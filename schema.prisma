@@ -1,0 +1,85 @@
+// database
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// generator
+generator client {
+  provider             = "prisma-client-py"
+  recursive_type_depth = 5
+}
+
+model Canteen {
+  remoteId String @id
+  name     String
+
+  menuItems MenuItem[]
+}
+
+model Additive {
+  code        String @id
+  description String
+
+  menuItems MenuItem[]
+}
+
+model Type {
+  code        String @id
+  description String
+  icon        String
+
+  menuItems MenuItem[]
+}
+
+model Counter {
+  name String @id @unique
+
+  menuItems MenuItem[]
+}
+
+model Day {
+  id   Int      @id @default(autoincrement())
+  date DateTime @unique
+
+  menuItems MenuItem[]
+}
+
+model MenuItem {
+  id          Int        @id @default(autoincrement())
+  titleId     Int        @unique
+  title       Title      @relation(fields: [titleId], references: [id])
+  type        Type[]
+  additives   Additive[]
+  category    String
+  priceId     Int
+  price       Price      @relation(fields: [priceId], references: [id])
+  dispoId     String
+  counter     Counter?    @relation(fields: [counterName], references: [name])
+  counterName String?
+  position    Int
+  day         Day        @relation(fields: [dayId], references: [id])
+  dayId       Int
+  canteen     Canteen    @relation(fields: [canteenId], references: [remoteId])
+  canteenId   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Title {
+  id       Int       @id @default(autoincrement())
+  de       String
+  en       String
+  parsedDe String
+  parsedEn String
+  MenuItem MenuItem?
+}
+
+model Price {
+  id       Int        @id @default(autoincrement())
+  student  Int
+  staff    Int
+  guest    Int
+  MenuItem MenuItem[]
+}
