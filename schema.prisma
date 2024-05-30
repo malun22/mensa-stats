@@ -14,14 +14,14 @@ model Canteen {
   remoteId String @id
   name     String
 
-  menuItems MenuItem[]
+  MenuItems MenuItem[]
 }
 
 model Additive {
   code        String @id
   description String
 
-  menuItems MenuItem[]
+  MenuItems MenuItem[]
 }
 
 model Type {
@@ -29,13 +29,13 @@ model Type {
   description String
   icon        String
 
-  menuItems MenuItem[]
+  MenuItems MenuItem[]
 }
 
 model Counter {
   name String @id @unique
 
-  menuItems MenuItem[]
+  MenuItems MenuItem[]
 }
 
 model Day {
@@ -47,7 +47,7 @@ model Day {
 
 model MenuItem {
   id          Int        @id @default(autoincrement())
-  titleId     Int        @unique
+  titleId     Int        
   title       Title      @relation(fields: [titleId], references: [id])
   type        Type[]
   additives   Additive[]
@@ -67,13 +67,14 @@ model MenuItem {
   updatedAt DateTime @updatedAt
 }
 
+
 model Title {
   id       Int       @id @default(autoincrement())
-  de       String
+  de       String     @unique
   en       String
   parsedDe String
   parsedEn String
-  MenuItem MenuItem?
+  MenuItems MenuItem[]
 }
 
 model Price {
@@ -81,5 +82,5 @@ model Price {
   student  Int
   staff    Int
   guest    Int
-  MenuItem MenuItem[]
+  MenuItems MenuItem[]
 }
