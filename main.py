@@ -44,6 +44,11 @@ async def get_menu_item_by_title_date_canteen(
     return menu_item
 
 
+async def get_title(prsima: Prisma, titleDe: str):
+    title = await prsima.title.find_unique(where={"de": titleDe})
+    return title
+
+
 def filter_additives(_additives: List[str]) -> List[str]:
     valid_codes = {type_item["code"]: type_item for type_item in additives}
 
@@ -91,23 +96,31 @@ async def fetch_data():
                 db_day = await create_day(prisma, day.date)
 
             for item in day.meals:
-                # Check if the menu item exists already
+                # Check if the menu item for this day exists already
                 db_menu_item = await get_menu_item_by_title_date_canteen(
                     prisma, item["title"]["de"], db_day.id, canteen
                 )
 
+                # Skip if its in the database already
                 if db_menu_item is not None:
                     continue
 
+                # Check if the title exists already
+                db_title = await get_title(prisma, item["title"]["de"])
+
                 new_menu_item_data = {
-                    "title": {
-                        "create": {
-                            "de": item["title"]["de"],
-                            "en": item["title"]["en"],
-                            "parsedDe": parse_menu_item_name(item["title"]["de"]),
-                            "parsedEn": parse_menu_item_name(item["title"]["en"]),
+                    "title": (
+                        {
+                            "create": {
+                                "de": item["title"]["de"],
+                                "en": item["title"]["en"],
+                                "parsedDe": parse_menu_item_name(item["title"]["de"]),
+                                "parsedEn": parse_menu_item_name(item["title"]["en"]),
+                            }
                         }
-                    },
+                        if not db_title
+                        else {"connect": {"id": db_title.id}}
+                    ),
                     "type": {
                         "connect": [{"code": t} for t in filter_types(item["type"])]
                     },
